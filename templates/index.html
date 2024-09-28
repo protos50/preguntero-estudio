@@ -1,49 +1,86 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Unne Moodle</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
-</head>
-<body>
+    <link rel="stylesheet" href="/static/css/styles.css" />
+  </head>
+  <body>
     <h1>Buscar en el PDF</h1>
     <form id="searchForm">
-        <label for="question">Escribe la pregunta:</label>
-        <input type="text" id="question" name="question" required>
-        
-        <label for="searchMode">Buscar hasta:</label>
-        <select id="searchMode" name="searchMode">
-            <option value="600">600 caracteres</option>
-            <option value="fecha">Hasta la fecha</option>
-        </select>
-    
-        <button type="submit">Buscar</button>
+      <label for="question">Escribe la pregunta:</label>
+      <input type="text" id="question" name="question" required />
+
+      <label for="searchMode">Buscar hasta:</label>
+      <select id="searchMode" name="searchMode">
+        <option value="600">600 caracteres</option>
+        <option value="fecha">Hasta la fecha</option>
+      </select>
+
+      <button type="submit">Buscar</button>
+      <button type="button" id="clearButton">Limpiar</button>
     </form>
     <div id="result"></div>
-    
+
     <script>
-        document.getElementById("searchForm").addEventListener("submit", function(event) {
-            event.preventDefault();
-            let question = document.getElementById("question").value;
-            let searchMode = document.getElementById("searchMode").value;
-    
-            fetch('/search', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ question: question, searchMode: searchMode })
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById("result").innerText = data.result;
-            })
-            .catch(error => {
-                console.error("Error:", error);
-            });
+      // Función para realizar la búsqueda automáticamente
+      function performSearch() {
+        let question = document.getElementById("question").value;
+        let searchMode = document.getElementById("searchMode").value;
+
+        fetch("/search", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            question: question,
+            searchMode: searchMode,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            document.getElementById("result").innerText = data.result;
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+          });
+      }
+
+      // Obtener el parámetro 'question' de la URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const question = urlParams.get("question");
+
+      // Si se encuentra el parámetro en la URL, llenarlo en el campo
+      if (question) {
+        document.getElementById("question").value = question;
+        performSearch();  // Realizar la búsqueda automáticamente
+      }
+
+      // También buscar en el localStorage si no hay parámetro en la URL
+      const storedQuestion = localStorage.getItem("selectedQuestion");
+      if (!question && storedQuestion) {
+        document.getElementById("question").value = storedQuestion;
+        localStorage.removeItem("selectedQuestion");  // Limpiar el localStorage
+        performSearch();  // Realizar la búsqueda automáticamente
+      }
+
+      // Evento para enviar manualmente el formulario
+      document
+        .getElementById("searchForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault();
+          performSearch();
+        });
+
+      // Botón de limpiar
+      document
+        .getElementById("clearButton")
+        .addEventListener("click", function () {
+          document.getElementById("question").value = '';
+          document.getElementById("result").innerHTML = '';
         });
     </script>
-    
-</body>
+  </body>
 </html>

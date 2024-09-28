@@ -1,0 +1,28 @@
+{
+    "manifest_version": 2,
+    "name": "Enviar texto a mi buscador",
+    "version": "1.0",
+    "permissions": [
+      "activeTab",
+      "contextMenus",
+      "storage"
+    ],
+    "background": {
+      "scripts": ["background.js"]
+    },
+    "content_scripts": [
+      {
+        "matches": ["*://virtual-moodle.unne.edu.ar/*"],
+        "js": ["content.js"]
+      }
+    ],
+    "browser_action": {
+      "default_popup": "popup.html",
+      "default_icon": {
+        "16": "icon.png",
+        "48": "icon.png",
+        "128": "icon.png"
+      }
+    }
+  }
+  

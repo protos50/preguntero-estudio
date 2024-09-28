@@ -46,7 +46,9 @@ pdf_text = extract_text_from_pdf("archivo.pdf")
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    # Obtener el parámetro 'question' de la URL
+    question = request.args.get('question', '')
+    return render_template('index.html', question=question)
 
 @app.route('/search', methods=['POST'])
 def search():
