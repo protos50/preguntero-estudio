@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unne Moodle</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <h1>Buscar en el PDF</h1>
+    <form id="searchForm">
+        <label for="question">Escribe la pregunta:</label>
+        <input type="text" id="question" name="question" required>
+        
+        <label for="searchMode">Buscar hasta:</label>
+        <select id="searchMode" name="searchMode">
+            <option value="600">600 caracteres</option>
+            <option value="fecha">Hasta la fecha</option>
+        </select>
+    
+        <button type="submit">Buscar</button>
+    </form>
+    <div id="result"></div>
+    
+    <script>
+        document.getElementById("searchForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            let question = document.getElementById("question").value;
+            let searchMode = document.getElementById("searchMode").value;
+    
+            fetch('/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ question: question, searchMode: searchMode })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("result").innerText = data.result;
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        });
+    </script>
+    
+</body>
+</html>
