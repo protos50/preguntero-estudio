@@ -12,7 +12,7 @@
     },
     "content_scripts": [
       {
-        "matches": ["*://virtual-moodle.unne.edu.ar/*"],
+        "matches": ["<all_urls>"],
         "js": ["content.js"]
       }
     ],

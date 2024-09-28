@@ -1,10 +1,13 @@
-from flask import Flask, request, render_template, jsonify
+import os
 import PyPDF2
 import re
+from flask import Flask, request, render_template, jsonify
+
 
 app = Flask(__name__)
 
 def extract_text_from_pdf(pdf_file):
+    """Takes a PDF file as input and returns the text content as a string"""
     with open(pdf_file, 'rb') as file:
         reader = PyPDF2.PdfReader(file)
         text = ""
@@ -12,6 +15,14 @@ def extract_text_from_pdf(pdf_file):
             text += page.extract_text()
     return text
 
+def extract_texts_from_all_pdfs(directory):
+    """Takes a directory as input and returns the text content as a string"""
+    all_text = ""
+    for filename in os.listdir(directory):
+        if filename.endswith(".pdf"):
+            pdf_path = os.path.join(directory, filename)
+            all_text += extract_text_from_pdf(pdf_path)
+    return all_text
 
 def search_question_in_pdf(question, pdf_text, search_mode):
     # Encuentra el índice de la pregunta en el texto
@@ -30,23 +41,29 @@ def search_question_in_pdf(question, pdf_text, search_mode):
                 end_index = start_index + match.end()
                 return pdf_text[index:end_index]
             else:
-                # Si no se encuentra la fecha, devuelve 600 caracteres por defecto
-                return pdf_text[index:index + 600]
+                # Si no se encuentra la fecha, devuelve 800 caracteres por defecto
+                return pdf_text[index:index + 800]
 
-        elif search_mode == "600":
-            # Devuelve 600 caracteres desde la pregunta
-            return pdf_text[index:index + 600]
+        elif search_mode == "800":
+            # Devuelve 800 caracteres desde la pregunta
+            return pdf_text[index:index + 800]
     
     return "Pregunta no encontrada."
 
-
-
-# Cargar el PDF al iniciar
-pdf_text = extract_text_from_pdf("archivo.pdf")
+# Cargar el texto de todos los PDFs en el directorio 'pdfs'
+pdf_directory = "pdfs"
+pdf_text = extract_texts_from_all_pdfs(pdf_directory)
 
 @app.route('/')
 def index():
     # Obtener el parámetro 'question' de la URL
+    """
+    La página principal de la aplicación.
+
+    Se encarga de obtener el parámetro 'question' de la URL y pasarlo a la
+    plantilla 'index.html' para que se llene el campo de búsqueda con
+    el valor de la pregunta.
+    """
     question = request.args.get('question', '')
     return render_template('index.html', question=question)
 
@@ -54,7 +71,7 @@ def index():
 def search():
     data = request.json
     question = data.get("question")
-    search_mode = data.get("searchMode", "600")  # Por defecto busca 600 caracteres
+    search_mode = data.get("searchMode", "800")  # Por defecto busca 600 caracteres
 
     if not question:
         return jsonify({"error": "No se envió ninguna pregunta"}), 400
