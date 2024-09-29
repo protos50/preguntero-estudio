@@ -1,21 +1,37 @@
 {
-    "manifest_version": 2,
-    "name": "Ask a question",
-    "version": "1.0",
-    "permissions": [
-      "activeTab",
-      "contextMenus",
-      "storage",
-      "tabs"
+  "manifest_version": 2,
+  "name": "Ask a question",
+  "version": "1.0",
+  "permissions": [
+    "activeTab",
+    "contextMenus",
+    "storage",
+    "tabs",
+    "scripting",
+    "http://localhost/*"
+  ],
+  "background": {
+    "scripts": [
+      "background.js"
     ],
-    "background": {
-      "scripts": ["background.js"]
-    },
-    "content_scripts": [
-      {
-        "matches": ["<all_urls>"],
-        "js": ["content.js"]
-      }
-    ]
-  }
-  
+    "persistent": false
+  },
+  "commands": {
+    "search_with_popup": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+F"
+      },
+      "description": "Search selected text and show in popup"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ]
+    }
+  ]
+}

@@ -2,9 +2,11 @@ import os
 import PyPDF2
 import re
 from flask import Flask, request, render_template, jsonify
+from flask_cors import CORS
 
 
 app = Flask(__name__)
+CORS(app)  # Habilita CORS para todas las rutas
 
 def extract_text_from_pdf(pdf_file):
     """Takes a PDF file as input and returns the text content as a string"""
@@ -67,17 +69,22 @@ def index():
     question = request.args.get('question', '')
     return render_template('index.html', question=question)
 
-@app.route('/search', methods=['POST'])
+@app.route('/search', methods=['GET', 'POST'])
 def search():
-    data = request.json
-    question = data.get("question")
-    search_mode = data.get("searchMode", "800")  # Por defecto busca 600 caracteres
+    if request.method == 'POST':
+        data = request.json
+        question = data.get("question")
+        search_mode = data.get("searchMode", "800")  # Por defecto busca 800 caracteres
+    else:
+        question = request.args.get('question', '')
+        search_mode = request.args.get('searchMode', '800')
 
     if not question:
         return jsonify({"error": "No se envió ninguna pregunta"}), 400
-    
+
     result = search_question_in_pdf(question, pdf_text, search_mode)
     return jsonify({"result": result})
+
 
 
 if __name__ == '__main__':
