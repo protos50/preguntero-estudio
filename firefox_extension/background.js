@@ -23,15 +23,47 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     let question = encodeURIComponent(info.selectionText);
     let url = `http://localhost:5000/search?question=${question}&searchMode=800`;
 
-    // Realiza una solicitud fetch para obtener la respuesta
     fetch(url)
       .then(response => response.json())
       .then(data => {
-        // Envía el resultado al content script para mostrar el popup
-        chrome.tabs.sendMessage(tab.id, { action: "showPopup", result: data.result });
+        if (data.result) {
+          chrome.tabs.sendMessage(tab.id, { action: "showPopup", result: data.result });
+        } else {
+          console.error("No se encontró el resultado en la respuesta.");
+        }
       })
       .catch(error => {
         console.error("Error:", error);
       });
+  }
+});
+
+chrome.commands.onCommand.addListener((command) => {
+  if (command === "search_with_popup") {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      chrome.tabs.executeScript(tabs[0].id, {
+        code: "window.getSelection().toString();"
+      }, (selection) => {
+        if (selection && selection[0]) {
+          let question = encodeURIComponent(selection[0]);
+          let url = `http://localhost:5000/search?question=${question}`;
+
+          fetch(url)
+            .then(response => response.json())
+            .then(data => {
+              if (data.result) {
+                chrome.tabs.sendMessage(tabs[0].id, { action: "showPopup", result: data.result });
+              } else {
+                console.error("No se encontró el resultado en la respuesta.");
+              }
+            })
+            .catch(error => {
+              console.error("Error:", error);
+            });
+        } else {
+          console.error("No hay texto seleccionado.");
+        }
+      });
+    });
   }
 });
